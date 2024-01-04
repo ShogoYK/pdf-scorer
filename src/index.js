@@ -5,3 +5,8 @@ const pdfFolderPath = './public/pdf'
 const files = await PdfController.getPdfFiles(pdfFolderPath)
 
 console.log(files);
+
+files.forEach(file => {
+    PdfController.writeTxtFiles(file)
+});
+
