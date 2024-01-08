@@ -21,7 +21,46 @@ class PdfController {
                 textBuffer += item.text
             }
         })
+    }  
+
+    async searchKeywordInFiles(keyword, pdfFolderPath){
+        const files = await this.getPdfFiles(pdfFolderPath)
+
+        const searches = files.map(file => this.searchKeyword(keyword, file))
+
+        const counts = await Promise.all(searches)
+
+        counts.forEach((count, index) => {
+            console.log(`${files[index]}: ${count}`);
+        });
+
     }
+
+    async searchKeyword(keyword, file) {
+        let textBuffer = '';
+        let matches = 0;
+        return new Promise((resolve, reject) => {
+            new PdfReader().parseFileItems('./public/pdf/' + file, (err, item) => {
+                if (err) reject(err);
+                else if (!item) {
+                    matches = this.countMatches(textBuffer, keyword)
+                    console.log(`${file}: ${matches} matches`);
+                    resolve(matches);
+                }
+                else if (item.text) {
+                    textBuffer += item.text
+                }
+            })
+        })
+
+    }
+
+    countMatches(content, keyword) {
+        const regex = new RegExp(keyword, 'g')
+        const matches = (content.match(regex) || []).length;
+        return matches;
+    }
+
 }
 
 export default new PdfController()
