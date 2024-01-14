@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { PdfReader } from 'pdfreader';
-import ConfigController from './ConfigController';
+import ConfigController from './ConfigController.js';
 
 class PdfController {
     async getPdfFiles(pdfFolderPath) {
@@ -26,11 +26,11 @@ class PdfController {
         let textBuffer = '';
         let matches = 0;
         let pageCount = 0;
-        const folderPath = ConfigController.getPdfFolderPath()
+        const folderPath = await ConfigController.getPdfFolderPath()
 
         return new Promise((resolve, reject) => {
 
-            new PdfReader().parseFileItems(folderPath + file, (err, item) => {
+            new PdfReader().parseFileItems(folderPath + '/' + file, (err, item) => {
                 if (err) reject(err);
                 else if (!item) {
                     matches = this.countMatches(textBuffer, keyword)
@@ -50,7 +50,7 @@ class PdfController {
     }
 
     calcAveragePerPage(matches, totalPages) {
-        let avg = ((matches * 100) / totalPages).toFixed(2)
+        let avg = ((matches) / totalPages).toFixed(2)
 
         return parseFloat(avg)
     }

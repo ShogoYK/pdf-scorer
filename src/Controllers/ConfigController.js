@@ -12,7 +12,7 @@ class ConfigController {
             await this.init();
         }
 
-        const folderPath = JSON.parse(fs.readFileSync('./config.json'))
+        const folderPath = await JSON.parse(fs.readFileSync('./config.json'))
 
         return folderPath.pdfFilePath;
     }
