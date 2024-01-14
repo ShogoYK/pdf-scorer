@@ -2,3 +2,5 @@ node_modules
 
 public/pdf/*
 public/txt/*
+
+config.json

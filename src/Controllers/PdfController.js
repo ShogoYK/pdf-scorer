@@ -21,38 +21,52 @@ class PdfController {
                 textBuffer += item.text
             }
         })
-    }  
+    }
 
-    async searchKeywordInFiles(keyword, pdfFolderPath){
-        const files = await this.getPdfFiles(pdfFolderPath)
+    async searchKeywordInFolder(keyword, folderPath) {
+        const files = await this.getPdfFiles(folderPath)
 
         const searches = files.map(file => this.searchKeyword(keyword, file))
 
         const counts = await Promise.all(searches)
 
-        counts.forEach((count, index) => {
-            console.log(`${files[index]}: ${count}`);
+        counts.forEach(count => {
+            count.avg = this.calcAveragePerPage(count.matches, count.pageCount)
         });
 
+        return counts;
     }
 
     async searchKeyword(keyword, file) {
         let textBuffer = '';
         let matches = 0;
+        let pageCount = 0;
+
         return new Promise((resolve, reject) => {
+
             new PdfReader().parseFileItems('./public/pdf/' + file, (err, item) => {
                 if (err) reject(err);
                 else if (!item) {
                     matches = this.countMatches(textBuffer, keyword)
-                    console.log(`${file}: ${matches} matches`);
-                    resolve(matches);
+                    console.log(file + '(' + pageCount + ' pages) found ' + matches + ' matches of ' + `'${keyword}'
+                    `);
+                    resolve({ file, matches, pageCount });
                 }
                 else if (item.text) {
                     textBuffer += item.text
                 }
+                if (item && item.page) {
+                    pageCount = Math.max(pageCount, item.page)
+                }
             })
         })
 
+    }
+
+    calcAveragePerPage(matches, totalPages) {
+        let avg = ((matches * 100) / totalPages).toFixed(2)
+
+        return parseFloat(avg)
     }
 
     countMatches(content, keyword) {
@@ -60,7 +74,6 @@ class PdfController {
         const matches = (content.match(regex) || []).length;
         return matches;
     }
-
 }
 
 export default new PdfController()
